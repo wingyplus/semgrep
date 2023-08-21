@@ -164,10 +164,10 @@ let map_quoted_slash (env : env) ((v1, v2, v3) : CST.quoted_slash) =
   map_quoted_xxx env (v1, v2, v3)
 
 let map_quoted_heredoc_double (env : env)
-    ((v1, v2, v3) : CST.quoted_heredoc_double) =
+    ((v1, v2, v3, v4) : CST.quoted_heredoc_double) =
   map_quoted_xxx env (v1, v2, v3)
 
-let map_quoted_single (env : env) ((v1, v2, v3) : CST.quoted_single) =
+let map_quoted_single (env : env) ((v1, v2, v3, v4) : CST.quoted_single) =
   map_quoted_xxx env (v1, v2, v3)
 
 let map_quoted_angle (env : env) ((v1, v2, v3) : CST.quoted_angle) =
