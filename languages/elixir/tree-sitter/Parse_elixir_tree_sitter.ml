@@ -111,86 +111,72 @@ let map_identifier (env : env) (x : CST.identifier) : ident =
       | `DOTDOTDOT tok -> (* "..." *) IdEllipsis (token env tok))
   | `Semg_meta tok -> IdMetavar (str env tok)
 
-let map_quoted_xxx (env : env) (v1, v2, v3) : string wrap bracket =
+let map_quoted_xxx (env : env) (v1, _v2, v3, v4) =
   let l = (* "/" or another one *) token env v1 in
   let xs =
     Common.map
       (fun x ->
-        match x with
-        | `Quoted_content_slash tok
-        | `Quoted_content_here_double tok
-        | `Quoted_content_single tok
-        | `Quoted_content_bar tok
-        | `Quoted_content_curl tok
-        | `Quoted_content_here_single tok
-        | `Quoted_content_square tok
-        | `Quoted_content_paren tok
-        | `Quoted_content_double tok
-        | `Quoted_content_angle tok ->
-            str env tok
-        | `Esc_seq tok -> (* escape_sequence *) str env tok)
-      v2
+        (* FIXME: content is now missing *)
+        let escape, _content = x in
+        str env escape)
+      v3
   in
-  let r = (* "/" or another one *) token env v3 in
+  let r = (* "/" or another one *) token env v4 in
   G.string_ (l, xs, r)
 
-let map_quoted_i_xxx f_map_interpolation (env : env) (v1, v2, v3) =
+let map_quoted_i_xxx f_map_interpolation (env : env) (v1, v2, v3, v4) =
   let v1 = (* "<" or another one *) token env v1 in
-  let v2 =
+  let _v2 = token env v2 in
+  let v3 =
     Common.map
       (fun x ->
-        match x with
-        | `Quoted_content_i_angle tok
-        | `Quoted_content_i_bar tok
-        | `Quoted_content_i_curl tok
-        | `Quoted_content_i_double tok
-        | `Quoted_content_i_here_double tok
-        | `Quoted_content_i_here_single tok
-        | `Quoted_content_i_paren tok
-        | `Quoted_content_i_single tok
-        | `Quoted_content_i_slash tok
-        | `Quoted_content_i_square tok ->
-            Left (* quoted_content_i_angle *) (str env tok)
-        | `Interp x ->
-            let l, e, r = f_map_interpolation env x in
-            Right (l, e, r)
-        | `Esc_seq tok -> Left ((* escape_sequence *) str env tok))
-      v2
+        (* FIXME: content is now missing *)
+        let escape, _content = x in
+        let t1 =
+          match escape with
+          | `Interp x ->
+              let l, e, r = f_map_interpolation env x in
+              Right (l, e, r)
+          | `Esc_seq tok -> Left ((* escape_sequence *) str env tok)
+        in
+        t1)
+      v3
   in
-  let v3 = (* ">" or another one *) token env v3 in
-  (v1, v2, v3)
+  let v4 = (* ">" or another one *) token env v4 in
+  (v1, v3, v4)
 
-let map_quoted_slash (env : env) ((v1, v2, v3) : CST.quoted_slash) =
-  map_quoted_xxx env (v1, v2, v3)
+let map_quoted_slash (env : env) ((v1, v2, v3, v4) : CST.quoted_slash) =
+  map_quoted_xxx env (v1, v2, v3, v4)
 
 let map_quoted_heredoc_double (env : env)
     ((v1, v2, v3, v4) : CST.quoted_heredoc_double) =
-  map_quoted_xxx env (v1, v2, v3)
+  map_quoted_xxx env (v1, v2, v3, v4)
 
 let map_quoted_single (env : env) ((v1, v2, v3, v4) : CST.quoted_single) =
-  map_quoted_xxx env (v1, v2, v3)
+  map_quoted_xxx env (v1, v2, v3, v4)
 
-let map_quoted_angle (env : env) ((v1, v2, v3) : CST.quoted_angle) =
-  map_quoted_xxx env (v1, v2, v3)
+let map_quoted_angle (env : env) ((v1, v2, v3, v4) : CST.quoted_angle) =
+  map_quoted_xxx env (v1, v2, v3, v4)
 
-let map_quoted_double (env : env) ((v1, v2, v3) : CST.quoted_double) =
-  map_quoted_xxx env (v1, v2, v3)
+let map_quoted_double (env : env) ((v1, v2, v3, v4) : CST.quoted_double) =
+  map_quoted_xxx env (v1, v2, v3, v4)
 
-let map_quoted_parenthesis (env : env) ((v1, v2, v3) : CST.quoted_parenthesis) =
-  map_quoted_xxx env (v1, v2, v3)
+let map_quoted_parenthesis (env : env)
+    ((v1, v2, v3, v4) : CST.quoted_parenthesis) =
+  map_quoted_xxx env (v1, v2, v3, v4)
 
-let map_quoted_square (env : env) ((v1, v2, v3) : CST.quoted_square) =
-  map_quoted_xxx env (v1, v2, v3)
+let map_quoted_square (env : env) ((v1, v2, v3, v4) : CST.quoted_square) =
+  map_quoted_xxx env (v1, v2, v3, v4)
 
 let map_quoted_heredoc_single (env : env)
-    ((v1, v2, v3) : CST.quoted_heredoc_single) =
-  map_quoted_xxx env (v1, v2, v3)
+    ((v1, v2, v3, v4) : CST.quoted_heredoc_single) =
+  map_quoted_xxx env (v1, v2, v3, v4)
 
-let map_quoted_curly (env : env) ((v1, v2, v3) : CST.quoted_curly) =
-  map_quoted_xxx env (v1, v2, v3)
+let map_quoted_curly (env : env) ((v1, v2, v3, v4) : CST.quoted_curly) =
+  map_quoted_xxx env (v1, v2, v3, v4)
 
-let map_quoted_bar (env : env) ((v1, v2, v3) : CST.quoted_bar) =
-  map_quoted_xxx env (v1, v2, v3)
+let map_quoted_bar (env : env) ((v1, v2, v3, v4) : CST.quoted_bar) =
+  map_quoted_xxx env (v1, v2, v3, v4)
 
 let map_operator_identifier (env : env) (x : CST.operator_identifier) :
     operator wrap =
@@ -235,7 +221,6 @@ let map_operator_identifier (env : env) (x : CST.operator_identifier) :
   | `DASHDASH tok -> (* "--" *) (OOther "--", token env tok)
   | `PLUSPLUSPLUS tok -> (* "+++" *) (OOther "+++", token env tok)
   | `DASHDASHDASH tok -> (* "---" *) (OOther "---", token env tok)
-  | `DOTDOT tok -> (* ".." *) (O G.Range, token env tok)
   | `LTGT tok -> (* "<>" *) (OOther "<>", token env tok)
   | `STAR tok -> (* "*" *) (O G.Mult, token env tok)
   | `SLASH tok -> (* "/" *) (O G.Div, token env tok)
@@ -368,6 +353,7 @@ and map_atom (env : env) (x : CST.atom) : atom =
       let x = map_anon_choice_quoted_i_double_d7d5f65 env v2 in
       (t, Quoted x)
 
+(* TODO: add `..` operator. *)
 and map_binary_operator (env : env) (x : CST.binary_operator) : expr =
   match x with
   | `Exp_choice_LTDASH_exp (v1, v2, v3) -> (
@@ -494,11 +480,14 @@ and map_binary_operator (env : env) (x : CST.binary_operator) : expr =
         | `DASHDASH tok -> (OOther "--", (* "--" *) token env tok)
         | `PLUSPLUSPLUS tok -> (OOther "+++", (* "+++" *) token env tok)
         | `DASHDASHDASH tok -> (OOther "---", (* "---" *) token env tok)
-        | `DOTDOT tok -> (O G.Range, (* ".." *) token env tok)
         | `LTGT tok -> (OOther "<>", (* "<>" *) token env tok)
       in
       let v3 = map_expression env v3 in
       binary_call v1 v2 v3
+  | `Exp_DOTDOT_exp (v1, v2, v3) ->
+      let v1 = map_expression env v1 in
+      let v3 = map_expression env v3 in
+      binary_call v1 (O G.Range, token env v2) v3
   | `Exp_choice_PLUS_exp (v1, v2, v3) ->
       let v1 = map_expression env v1 in
       let v2 =
@@ -528,19 +517,24 @@ and map_binary_operator (env : env) (x : CST.binary_operator) : expr =
       let s, t = (* integer *) str env v3 in
       OpArity (op, tslash, (int_of_string_opt s, t))
 
-and map_body (env : env) ((v1, v2, v3, v4) : CST.body) : body =
-  let _v1 = map_terminator_opt env v1 in
-  let v2 = map_expression env v2 in
-  let v3 =
-    Common.map
-      (fun (v1, v2) ->
-        let _v1 = map_terminator env v1 in
-        let v2 = map_expression env v2 in
-        v2)
-      v3
-  in
-  let _v4 = map_terminator_opt env v4 in
-  v2 :: v3
+and map_body (env : env) (x : CST.body) : body =
+  match x with
+  | `Term v1 ->
+      let _v1 = map_terminator env v1 in
+      []
+  | `Opt_term_exp_rep_term_exp_opt_term (v1, v2, v3, v4) ->
+      let _v1 = map_terminator_opt env v1 in
+      let v2 = map_expression env v2 in
+      let v3 =
+        Common.map
+          (fun (v1, v2) ->
+            let _v1 = map_terminator env v1 in
+            let v2 = map_expression env v2 in
+            v2)
+          v3
+      in
+      let _v4 = map_terminator_opt env v4 in
+      v2 :: v3
 
 and map_call (env : env) (x : CST.call) : call =
   match x with
@@ -789,7 +783,7 @@ and map_expression (env : env) (x : CST.expression) : expr =
               | `Quoted_i_slash x -> map_quoted_i_slash env x
             in
             Lower ((String.get lower 0, t), quoted)
-        | `Imm_tok_pat_562b724_choice_quoted_double (v1, v2) ->
+        | `Imm_tok_pat_37640cd_choice_quoted_double (v1, v2) ->
             let upper, t = (* pattern [A-Z] *) str env v1 in
             let str : string wrap bracket =
               match v2 with
@@ -848,6 +842,8 @@ and map_expression (env : env) (x : CST.expression) : expr =
       in
       let r = (* "}" *) token env v5 in
       Map (tpercent, struct_opt, (l, xs, r))
+  (* FIXME *)
+  | `Null_op x -> map_unary_operator env x
   | `Un_op x -> map_unary_operator env x
   | `Bin_op x -> map_binary_operator env x
   | `Dot x -> map_dot env x
@@ -878,9 +874,13 @@ and map_expression (env : env) (x : CST.expression) : expr =
       Lambda (tfn, clauses, tend)
 
 and map_interpolation (env : env) ((v1, v2, v3) : CST.interpolation) :
-    expr bracket =
+    expr option bracket =
   let v1 = (* "#{" *) token env v1 in
-  let v2 = map_expression env v2 in
+  let v2 =
+    match v2 with
+    | Some v2 -> Some (map_expression env v2)
+    | None -> None
+  in
   let v3 = (* "}" *) token env v3 in
   (v1, v2, v3)
 
@@ -968,39 +968,39 @@ and map_pair (env : env) ((v1, v2) : CST.pair) : pair =
   let v2 = map_expression env v2 in
   (v1, v2)
 
-and map_quoted_i_angle (env : env) ((v1, v2, v3) : CST.quoted_i_angle) : quoted
-    =
-  map_quoted_i_xxx map_interpolation env (v1, v2, v3)
+and map_quoted_i_angle (env : env) ((v1, v2, v3, v4) : CST.quoted_i_angle) :
+    quoted =
+  map_quoted_i_xxx map_interpolation env (v1, v2, v3, v4)
 
-and map_quoted_i_bar (env : env) ((v1, v2, v3) : CST.quoted_i_bar) =
-  map_quoted_i_xxx map_interpolation env (v1, v2, v3)
+and map_quoted_i_bar (env : env) ((v1, v2, v3, v4) : CST.quoted_i_bar) =
+  map_quoted_i_xxx map_interpolation env (v1, v2, v3, v4)
 
-and map_quoted_i_curly (env : env) ((v1, v2, v3) : CST.quoted_i_curly) =
-  map_quoted_i_xxx map_interpolation env (v1, v2, v3)
+and map_quoted_i_curly (env : env) ((v1, v2, v3, v4) : CST.quoted_i_curly) =
+  map_quoted_i_xxx map_interpolation env (v1, v2, v3, v4)
 
-and map_quoted_i_double (env : env) ((v1, v2, v3) : CST.quoted_i_double) =
-  map_quoted_i_xxx map_interpolation env (v1, v2, v3)
+and map_quoted_i_double (env : env) ((v1, v2, v3, v4) : CST.quoted_i_double) =
+  map_quoted_i_xxx map_interpolation env (v1, v2, v3, v4)
 
 and map_quoted_i_heredoc_double (env : env)
-    ((v1, v2, v3) : CST.quoted_i_heredoc_double) =
-  map_quoted_i_xxx map_interpolation env (v1, v2, v3)
+    ((v1, v2, v3, v4) : CST.quoted_i_heredoc_double) =
+  map_quoted_i_xxx map_interpolation env (v1, v2, v3, v4)
 
 and map_quoted_i_heredoc_single (env : env)
-    ((v1, v2, v3) : CST.quoted_i_heredoc_single) =
-  map_quoted_i_xxx map_interpolation env (v1, v2, v3)
+    ((v1, v2, v3, v4) : CST.quoted_i_heredoc_single) =
+  map_quoted_i_xxx map_interpolation env (v1, v2, v3, v4)
 
 and map_quoted_i_parenthesis (env : env)
-    ((v1, v2, v3) : CST.quoted_i_parenthesis) =
-  map_quoted_i_xxx map_interpolation env (v1, v2, v3)
+    ((v1, v2, v3, v4) : CST.quoted_i_parenthesis) =
+  map_quoted_i_xxx map_interpolation env (v1, v2, v3, v4)
 
-and map_quoted_i_single (env : env) ((v1, v2, v3) : CST.quoted_i_single) =
-  map_quoted_i_xxx map_interpolation env (v1, v2, v3)
+and map_quoted_i_single (env : env) ((v1, v2, v3, v4) : CST.quoted_i_single) =
+  map_quoted_i_xxx map_interpolation env (v1, v2, v3, v4)
 
-and map_quoted_i_slash (env : env) ((v1, v2, v3) : CST.quoted_i_slash) =
-  map_quoted_i_xxx map_interpolation env (v1, v2, v3)
+and map_quoted_i_slash (env : env) ((v1, v2, v3, v4) : CST.quoted_i_slash) =
+  map_quoted_i_xxx map_interpolation env (v1, v2, v3, v4)
 
-and map_quoted_i_square (env : env) ((v1, v2, v3) : CST.quoted_i_square) =
-  map_quoted_i_xxx map_interpolation env (v1, v2, v3)
+and map_quoted_i_square (env : env) ((v1, v2, v3, v4) : CST.quoted_i_square) =
+  map_quoted_i_xxx map_interpolation env (v1, v2, v3, v4)
 
 and map_remote_call_with_parentheses (env : env)
     ((v1, v2, v3) : CST.remote_call_with_parentheses) : call =
