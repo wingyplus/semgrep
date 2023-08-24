@@ -388,7 +388,7 @@ def ci(
             dryrun=dry_run,
             # Always true, as we want to always report all findings, even
             # ignored ones, to the backend
-            disable_nosem=True,
+            disable_nosem=False,
             no_git_ignore=(not use_git_ignore),
             timeout=timeout,
             max_memory=max_memory,
